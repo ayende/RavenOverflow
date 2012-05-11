@@ -9,6 +9,7 @@ using RavenOverflow.Core.Entities;
 using RavenOverflow.Core.Services;
 using RavenOverflow.Services;
 using RavenOverflow.Web.Controllers;
+using RavenOverflow.Web.DependencyResolution;
 using RavenOverflow.Web.Models;
 using RavenOverflow.Web.Models.Authentication;
 
@@ -20,8 +21,7 @@ namespace RavenOverflow.Web.Areas.User.Controllers
         private readonly string _facebookSecret;
         private readonly ICustomFormsAuthentication _customFormsAuthentication;
         
-        public UsersController(IDocumentStore documentStore,
-                               ICustomFormsAuthentication customCustomFormsAuthentication,
+        public UsersController(DocumentStores documentStore, ICustomFormsAuthentication customCustomFormsAuthentication,
                                IOAuthAuthentication oAuthAuthentication)
             : base(documentStore)
         {
@@ -137,7 +137,7 @@ namespace RavenOverflow.Web.Areas.User.Controllers
 
             
             // Not sure how to Inject an IUserService because it requires a Session .. which I don't have.
-            var userService = new UserService(DocumentSession);
+            var userService = new UserService(UsersSession);
             
             // Now associate this facebook user to an existing user OR create a new one.
             return userService.CreateOrUpdate(oauthData, facebookUser.username, facebookUser.name, facebookUser.email);

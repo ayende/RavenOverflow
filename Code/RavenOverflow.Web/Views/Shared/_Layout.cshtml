@@ -17,11 +17,22 @@
 <body class="home-page">
 
     @Raven.Client.MvcIntegration.RavenProfiler.CurrentRequestSessions();
-
-    <noscript><div id="noscript-padding"></div></noscript>
+	
+	<noscript><div id="noscript-padding"></div></noscript>
 
     @Html.Partial("_MainNavigation", new _MainNavigationViewModel { CustomIdentity = Model.CustomIdentity })
-
+	
+	<div>
+		@if (HttpContext.Current.Items["raven-query-error"] != null)
+		{
+			<ul>
+				@foreach(var msg in (HashSet<string>) HttpContext.Current.Items["raven-query-error"])
+				{
+					<li>@msg</li>
+				}
+			</ul>
+		}
+	</div>
     <div id="notify-container"></div>
     <div id="overlay-header"></div>
     <div id="custom-header"></div>

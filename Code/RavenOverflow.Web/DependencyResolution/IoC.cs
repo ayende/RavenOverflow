@@ -9,8 +9,7 @@ namespace RavenOverflow.Web.DependencyResolution
         {
             ObjectFactory.Initialize(x =>
                                          {
-                                             x.AddRegistry(
-                                                 new RavenDbRegistry(ConfigurationManager.ConnectionStrings[0].Name));
+                                             x.AddRegistry(new RavenDbRegistry());
                                              x.AddRegistry(
                                                  new AuthenticationRegistry(
                                                      ConfigurationManager.AppSettings["FacebookAppId"],

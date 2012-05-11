@@ -7,16 +7,25 @@ using Raven.Client;
 using Raven.Client.Linq;
 using RavenOverflow.Core.Entities;
 using RavenOverflow.Core.Extensions;
+using RavenOverflow.Web.DependencyResolution;
 using RavenOverflow.Web.Models.ViewModels;
 using RavenOverflow.Web.RavenDb.Indexes;
+using RavenOverflow.Web.RavenDb;
 
 namespace RavenOverflow.Web.Controllers
 {
     public class HomeController : RavenDbController
     {
-        public HomeController(IDocumentStore documentStore) : base(documentStore)
+        public HomeController(DocumentStores documentStore) : base(documentStore)
         {
         }
+
+		[HttpGet]
+		public ActionResult Create()
+		{
+			_documentStores.CreateSeedData();
+			return Content("Created data");
+		}
 
         [HttpGet]
         public ActionResult Index(string displayName, string tag)
@@ -113,7 +122,7 @@ namespace RavenOverflow.Web.Controllers
         [HttpGet]
         public ActionResult AggressiveIndex(string displayName, string tag)
         {
-            using (DocumentSession.Advanced.DocumentStore.AggressivelyCacheFor(TimeSpan.FromMinutes(1)))
+            using (AggressivelyCacheFor(TimeSpan.FromMinutes(1)))
             {
                 string header;
 
@@ -164,7 +173,7 @@ namespace RavenOverflow.Web.Controllers
         public ActionResult Tag(string id)
         {
             RavenQueryStatistics stats;
-            List<Question> questions = DocumentSession.Query<Question>()
+            List<Question> questions = QuestionsSession.Query<Question>()
                 .Statistics(out stats)
                 .OrderByCreatedByDescending()
                 .Take(20)
@@ -180,7 +189,7 @@ namespace RavenOverflow.Web.Controllers
 
         public ActionResult Facets(string id)
         {
-            IDictionary<string, IEnumerable<FacetValue>> facets = DocumentSession.Query
+			IDictionary<string, IEnumerable<FacetValue>> facets = QuestionsSession.Query
                 <RecentPopularTagsMapOnly.ReduceResult, RecentPopularTagsMapOnly>()
                 .Where(x => x.LastSeen > DateTime.UtcNow.AddMonths(-1).ToUtcToday())
                 .ToFacets("Raven/Facets/Tags");
@@ -190,7 +199,7 @@ namespace RavenOverflow.Web.Controllers
 
         public ActionResult Search(string term)
         {
-            IRavenQueryable<RecentPopularTags.ReduceResult> query = DocumentSession
+			IRavenQueryable<RecentPopularTags.ReduceResult> query = QuestionsSession
                 .Query<RecentPopularTags.ReduceResult, RecentPopularTags>()
                 .Where(x => x.Tag == term);
 
@@ -227,7 +236,7 @@ namespace RavenOverflow.Web.Controllers
         {
             header = "Top Questions";
 
-            IQueryable<Question> questionsQuery = DocumentSession.Query<Question, Questions_Search>()
+			IQueryable<Question> questionsQuery = QuestionsSession.Query<Question, Questions_Search>()
                 .OrderByCreatedByDescending()
                 .Take(20);
 
@@ -245,7 +254,7 @@ namespace RavenOverflow.Web.Controllers
         private IQueryable<RecentPopularTags.ReduceResult> RecentPopularTagsQuery()
         {
             IQueryable<RecentPopularTags.ReduceResult> recentPopularTags =
-                DocumentSession.Query<RecentPopularTags.ReduceResult, RecentPopularTags>()
+				QuestionsSession.Query<RecentPopularTags.ReduceResult, RecentPopularTags>()
                     .WithinTheLastMonth(1)
                     .OrderByCountDescending()
                     .Take(20);
@@ -256,7 +265,7 @@ namespace RavenOverflow.Web.Controllers
         private IQueryable<User> UserQuery(string displayName)
         {
             string name = displayName ?? User.Identity.Name;
-            return !string.IsNullOrEmpty(name) ? DocumentSession.Query<User>().WithDisplayName(name) : null;
+            return !string.IsNullOrEmpty(name) ? UsersSession.Query<User>().WithDisplayName(name) : null;
         }
     }
 }

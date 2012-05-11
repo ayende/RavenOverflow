@@ -32,7 +32,7 @@ namespace RavenOverflow.FakeData
 
         public static ICollection<Question> CreateFakeQuestions(IList<string> userIds)
         {
-            return CreateFakeQuestions(userIds, GetRandom.Int(20, 100));
+            return CreateFakeQuestions(userIds, 100);
         }
 
         public static ICollection<Question> CreateFakeQuestions(IList<string> userIds, int numberOfFakeQuestions)

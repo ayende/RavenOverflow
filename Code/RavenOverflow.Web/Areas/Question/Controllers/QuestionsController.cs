@@ -6,19 +6,15 @@ using Raven.Client;
 using RavenOverflow.Core.Services;
 using RavenOverflow.Web.Areas.Question.Models.ViewModels;
 using RavenOverflow.Web.Controllers;
+using RavenOverflow.Web.DependencyResolution;
 
 namespace RavenOverflow.Web.Areas.Question.Controllers
 {
     public class QuestionsController : RavenDbController
     {
-        private readonly IQuestionService _questionService;
-
-        public QuestionsController(IDocumentStore documentStore, IQuestionService questionService)
-            : base(documentStore)
+        public QuestionsController(DocumentStores documentStores)
+            : base(documentStores)
         {
-            Condition.Requires(questionService).IsNotNull();
-
-            _questionService = questionService;
         }
 
         [HttpGet]
@@ -41,7 +37,7 @@ namespace RavenOverflow.Web.Areas.Question.Controllers
                     Core.Entities.Question question = Mapper.Map<CreateInputModel, Core.Entities.Question>(inputModel);
                     question.CreatedByUserId = User.Identity.UserId;
 
-                    _questionService.Create(question, DocumentSession);
+					QuestionsSession.Store(question);
 
                     return RedirectToAction("Index", "Home", new { area = "" });
                 }
